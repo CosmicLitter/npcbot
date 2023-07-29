@@ -20,7 +20,7 @@
 	import NPCSettings from '$lib/Modals/NPCSettings.svelte';
 	import { recentViewerStore, settingsStore } from '$lib/stores';
 	import * as tmi from 'tmi.js'
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	const elevenLabs = $settingsStore.elevenLabsApiKey ?? '';	
 	let connected = false;
@@ -61,6 +61,14 @@
 		}
     })
 
+	onDestroy(() => {
+		// client.removeListener('join', onJoin);
+		if (channel) {
+			client.disconnect()
+			console.log('disconnected')
+			connected = false;
+		}
+    })
 
 	const modalComponentRegistry: Record<string, ModalComponent> = {
 		ClientSettings: { ref: ClientSettings },
