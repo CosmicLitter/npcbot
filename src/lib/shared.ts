@@ -1,9 +1,9 @@
-import { modalStore, type ModalSettings } from "@skeletonlabs/skeleton";
+import { modalStore, type ModalSettings, type ToastSettings, toastStore } from "@skeletonlabs/skeleton";
 import type { ChatCompletionRequestMessage } from "openai";
 import { defaultOpenAiSettings, type OpenAiSettings } from "$lib/openai";
 import { get } from "svelte/store";
-import { npcChatStore, settingsStore, navStore } from "$lib/stores";
-import type { NpcChat, VoiceSettings } from "$lib/types";
+import { npcChatStore, settingsStore, navStore, voiceWhitelistStore } from "$lib/stores";
+import type { NpcChat, ViewerSettings, VoiceSettings } from "$lib/types";
 import { goto } from "$app/navigation";
 
 export function showModalComponent(
@@ -52,6 +52,37 @@ export function createNewNpcChat(template?: {
     navStore.update((value) => [...value, slug])
 
     goto(`/${slug}`)
+}
+
+export function addViewer(name: string, template?: {
+    voiceSettings?: VoiceSettings
+    quote?: boolean
+    mute?: boolean
+}) {
+    const { defaultVoice } = get(settingsStore)
+    const voiceWhitelist = get(voiceWhitelistStore)
+    if (voiceWhitelist[name]) {
+        const t: ToastSettings = {
+            message: `${name} is already in the voice whitelist.`,
+            background: 'variant-filled-error'
+        }
+        toastStore.trigger(t)
+        return
+    }
+    
+    const voiceSettings = {...(template?.voiceSettings || defaultVoice || defaultVoiceSettings)}
+    const viewerWhitelist: ViewerSettings = {
+        voiceSettings,
+        quote: template?.quote || true,
+        mute: template?.mute || false
+    }
+    voiceWhitelistStore.updateVoiceWhitelist(name, viewerWhitelist)
+
+    const t: ToastSettings = {
+        message: `Added ${name} to the voice whitelist.`,
+        background: 'variant-filled-success'
+    }
+    toastStore.trigger(t)
 }
 
 export function generateID(): string {
@@ -110,17 +141,17 @@ export interface Voice {
     name: string;
 }
 
-export const handleGenerateTTS = async (voiceSettings: VoiceSettings, message: string, elevenLabs: string, quote = false) => {
+export const handleGenerateTTS = async (voiceSettings: VoiceSettings, message: string, elevenLabs: string, readQuote = false) => {
 	let text = message;
 	const voice = voiceSettings.voice;
 	const stability = voiceSettings.stability;
 	const similarity = voiceSettings.similarity;
 
-    if (!quote) {
+    if (readQuote) {
 		// Pull the quote out of the message
 		const getTextWithinQuotes = (input: string): string => {
 			// A regular expression that matches the text within double quotes
-			const match = input.match(/"([^"]+)"/);
+			const match = input.match(/["“”]([^"“”]+)["“”]/);
 			if (match) {
 				return match[1];
 			}
@@ -153,7 +184,7 @@ export const handleGenerateTTS = async (voiceSettings: VoiceSettings, message: s
 
 		const { file } = await response.json()
 
-		console.log(file)
+		console.log(`file written: ${file}`)
 		
 		// Create an Audio object and set its src attribute to the URL of the audio file
 		const audio = new Audio(`/public/${file}`);

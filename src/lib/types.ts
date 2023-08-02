@@ -8,15 +8,28 @@ export interface ClientSettings {
     openAiApiKey?: string;
     defaultModel?: OpenAiModel;
     voiceLibrary?: Voice[];
-    ignoreQuote?: boolean;
-    usersVoice?: {
-        voiceWhitelist?: ViewerSettings[];
-    }
+    // ignoreQuote?: boolean;
+    // usersVoice?: {
+    //     voiceWhitelist?: ViewerSettings[];
+    // }
+    randomReading?: boolean
+    readingChance?: number
+    viewerVoices?: boolean
+    defaultVoice?: VoiceSettings
 }
 
+
+
 export interface ViewerSettings {
-    viewerName: string;
     voiceSettings: VoiceSettings;
+    quote: boolean;
+    mute: boolean;
+}
+
+export interface TwitchChat {
+    viewer: Viewer
+    message: string
+    selected: boolean
 }
 
 export interface NpcChat {
@@ -57,5 +70,16 @@ export class Character {
         this.description = ''
         this.systemPrompt = ''
         this.voiceSettings = defaultVoiceSettings
+    }
+}
+
+export class Viewer {
+    username: string
+    color: string
+    static colors = ["red", "blue", "green", "purple", "pink", "orange"]
+
+    constructor(username: string) {
+        this.username = username
+        this.color = Viewer.colors[Math.floor(Math.random() * Viewer.colors.length)]
     }
 }

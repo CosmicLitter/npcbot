@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { settingsStore } from "$lib/stores";
-    import { getVoices } from "$lib/shared";
-	import { modalStore, toastStore, type ToastSettings } from "@skeletonlabs/skeleton";
+    import { defaultVoiceSettings, getVoices } from "$lib/shared";
+	import { modalStore, toastStore, type ToastSettings, RangeSlider } from "@skeletonlabs/skeleton";
     import type { Voice } from "$lib/types";
 
     // Mask the API key when not editing it
@@ -46,7 +46,6 @@
                 background: "variant-filled-success",
             }
             toastStore.trigger(t)
-            modalStore.close()
         } catch (e) {
             console.error('Error retrieving voices. Either the API key is invalid or the Eleven Labs API is down.')
             console.error(e)
@@ -58,8 +57,22 @@
         }
     }
 
+    const clearSettings = () => {
+        localStorage.removeItem("voiceSettingsStore");
+        localStorage.removeItem("settingsStore");
+        localStorage.removeItem('npcChatStore');
+        confirmClear = false;
+        modalStore.close();
+        location.reload();
+    }
+
+    if (!$settingsStore.defaultVoice) {
+        $settingsStore.defaultVoice = defaultVoiceSettings
+    }
+
     let editEAPIKey = false
     let editOAPIKey = false
+    let confirmClear = false
 
     let voices: Voice[]
 
@@ -182,12 +195,43 @@
         </div>
 
         <hr class="!border-2 mb-2"/>
-
-        {#if $settingsStore.elevenLabsApiKey}
-        <div class="flex justify-center">
-            <button class="btn variant-filled-surface rounded-sm" on:click={fetchVoices}>Import Voices</button>
+    {/if}
+    {#if $settingsStore.voiceLibrary}
+        {#if $settingsStore.defaultVoice}
+        <div class="flex flex-col space-y-2">
+            <label class= "text-xl" for="Voice">Default Voice: <p class="text-sm text-gray-300">Will be used for the random reader and when new viewers are added to the whitelist</p></label>
+            <select class="select rounded-sm" bind:value={$settingsStore.defaultVoice.voice}>
+                {#each $settingsStore.voiceLibrary ?? [] as voice}
+                    <option value={voice.id}>{voice.name}</option>
+                {/each}
+            </select>
+            <RangeSlider name="stability-slider" min={0} max={1} step={0.01} bind:value={$settingsStore.defaultVoice.stability}>
+            <div class="flex justify-between items-center">
+                <div>Stability:</div>
+                <div class="text-xs">{$settingsStore.defaultVoice.stability}</div>
+            </div>
+            </RangeSlider>
+            <RangeSlider name="similarity-slider" min={0} max={1} step={0.01} bind:value={$settingsStore.defaultVoice.similarity}>
+                <div class="flex justify-between items-center">
+                    <div>Similarity:</div>
+                    <div class="text-xs">{$settingsStore.defaultVoice.similarity}</div>
+                </div>
+            </RangeSlider>
         </div>
         {/if}
-
     {/if}
+    {#if $settingsStore.elevenLabsApiKey}
+        <div class="flex justify-center">
+            <button class="btn w-full variant-filled-surface rounded-sm" on:click={fetchVoices}>Import Voices</button>
+        </div>
+    {/if}
+   
+    <div class="flex justify-center pt-2">
+        {#if !confirmClear}
+        <button class="btn w-full variant-soft-primary rounded-sm p-2" on:click={()=> confirmClear=true}>Clear Settings</button>
+        {:else}
+        <button class="btn w-full variant-filled-primary rounded-sm p-2" on:click={clearSettings}>Confirm?</button>
+        {/if}
+
+    </div>
 </div>

@@ -13,7 +13,6 @@ export const POST = async (event) => {
          */
         const file = new Blob([requestFile as BlobPart], { type: 'audio/wav' });
 
-        console.log(file)
     
         const formData = new FormData();
         formData.append('file', file, 'test.wav');
@@ -36,7 +35,6 @@ export const POST = async (event) => {
         );
     
         const data = await transcriptionResponse.json();
-        console.log(data)
         const transcribedText = data?.text || '';
     
         return json({ transcribedText });
