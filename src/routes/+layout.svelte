@@ -25,6 +25,7 @@
 	import Whitelist from '$lib/Components/Whitelist.svelte';
 	import NPCBot from '$lib/Components/NPCBot.svelte';
 	import TwitchChatSettings from '$lib/Components/TwitchChatSettings.svelte';
+	import StarfieldCountdown from '$lib/Components/StarfieldCountdown.svelte';
 
 	onMount(() => {
 		// Connect with stored channel when app loads
@@ -205,7 +206,7 @@
 	</svelte:fragment>
 	<!-- Page Route Content -->
 	<div class="flex justify-center">
-		<div class="container m-2 p-4 rounded-sm flex flex-col gap-4">
+		<div class="container p-4 rounded-sm flex flex-col gap-4">
 			<div class="flex flex-row gap-8">
 				<!-- Whitelist Settings -->
 				<div class="card rounded-sm variant-glass-surface basis-1/5 border border-surface-500 p-2 drop-shadow-md">
@@ -213,7 +214,10 @@
 				</div>
 				<!-- NPC BotSettings Panel -->
 				<div class="card rounded-sm basis-3/5 border border-surface-500 p-2 drop-shadow-md text-center">
-					<p>NPC Bot Settings (WIP)</p>
+					<div class="flex flex-col items-center justify-center h-full">
+						<p class="text-gray-400">A countdown to something 😃...</p>
+						<StarfieldCountdown />
+					</div>
 				</div>
 				<!-- Live Twitch Chat Settings Panel -->
 				<div class="card rounded-sm basis-3/12 border border-surface-500 p-2 drop-shadow-md">
