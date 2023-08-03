@@ -146,6 +146,7 @@
 		}
 
 		if (!$settingsStore.readingChance) {
+			console.log("No reading chance defaulting to 50%")
 			$settingsStore.readingChance = 0.5;
 		}
 		const selected = randomChance($settingsStore.readingChance);
@@ -153,10 +154,12 @@
 
 		if ($settingsStore.randomReading) {
 			if (selected) {
-				if ($settingsStore.defaultVoice) {
-					handleGenerateTTS( $settingsStore.defaultVoice, message, elevenLabs)
-				} else {
-					handleGenerateTTS( defaultVoiceSettings, message, elevenLabs)
+				if (!$voiceWhitelistStore[username]) {
+					if ($settingsStore.defaultVoice) {
+						handleGenerateTTS( $settingsStore.defaultVoice, message, elevenLabs)
+					} else {
+						handleGenerateTTS( defaultVoiceSettings, message, elevenLabs)
+					}
 				}
 			}
 		}
